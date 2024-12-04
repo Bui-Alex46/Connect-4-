@@ -70,3 +70,45 @@ class Board:
             if r < 0 or r >= self.rows or c < 0 or c >= self.columns or self.grid[r][c] != symbol:
                 return False
         return True
+    
+    def evaluate_board(self): # Function to evaluate the board
+        if self.check_win("O"): # Check if AI wins
+            return 100
+        elif self.check_win("X"):  # Check if player wins
+            return -100
+        else:
+            return 0
+
+    def get_valid_columns(self): # Function to get valid columns
+        valid_columns = []
+        for col in range(self.columns):
+            if self.grid[0][col] == " ":
+                valid_columns.append(col)
+        return valid_columns
+
+    def minimax(self, depth, is_maximizing): # Function to implement minimax algorithm
+        score = self.evaluate_board()
+
+        if abs(score) == 100 or self.is_full() or depth == 0:
+            return score
+
+        if is_maximizing:
+            best_score = float("-inf")
+            for col in self.get_valid_columns():
+                self.drop_piece(col, self.player2)
+                best_score = max(best_score, self.minimax(depth - 1, False))
+                self.undo_move(col)
+            return best_score
+        else:
+            best_score = float("inf")
+            for col in self.get_valid_columns():
+                self.drop_piece(col, self.player1)
+                best_score = min(best_score, self.minimax(depth - 1, True))
+                self.undo_move(col)
+            return best_score
+
+    def undo_move(self, column):
+        for row in range(self.rows):
+            if self.grid[row][column] != " ":
+                self.grid[row][column] = " "
+                break
